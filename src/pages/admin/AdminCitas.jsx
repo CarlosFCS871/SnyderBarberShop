@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../config/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
-import { FaArrowLeft, FaCalendarAlt, FaFilter } from 'react-icons/fa';
+import { FaArrowLeft, FaCalendarAlt, FaFilter, FaUser, FaUserTie, FaCut, FaClock } from 'react-icons/fa';
 
 const AdminCitas = () => {
   const navigate = useNavigate();
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtro, setFiltro] = useState('Todas'); // Estado para el filtro actual
+  const [filtro, setFiltro] = useState('Todas');
 
   useEffect(() => {
     const fetchCitas = async () => {
@@ -16,11 +16,9 @@ const AdminCitas = () => {
         const querySnapshot = await getDocs(collection(db, 'citas'));
         let listaCitas = [];
 
-        // Usamos un bucle for...of para poder hacer consultas asíncronas dentro (buscar nombre del cliente)
         for (const documento of querySnapshot.docs) {
           const dataCita = documento.data();
           
-          // Buscamos el nombre del cliente en la colección usuarios
           let nombreCliente = 'Cliente Desconocido';
           if (dataCita.clienteId) {
             const clienteSnap = await getDoc(doc(db, 'usuarios', dataCita.clienteId));
@@ -36,7 +34,6 @@ const AdminCitas = () => {
           });
         }
 
-        // Ordenamos: las más recientes/próximas primero
         listaCitas.sort((a, b) => {
           const dateA = new Date(`${a.fecha}T${a.hora}`);
           const dateB = new Date(`${b.fecha}T${b.hora}`);
@@ -56,45 +53,79 @@ const AdminCitas = () => {
 
   const getBadgeStyle = (estado) => {
     switch(estado) {
-      case 'Pendiente': return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20';
-      case 'Confirmada': return 'text-green-500 bg-green-500/10 border-green-500/20';
-      case 'Finalizada': return 'text-blue-500 bg-blue-500/10 border-blue-500/20';
-      case 'Cancelada': return 'text-red-500 bg-red-500/10 border-red-500/20';
-      default: return 'text-gray-400 bg-gray-500/10 border-gray-500/20';
+      case 'Pendiente': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
+      case 'Confirmada': return 'text-green-400 bg-green-500/10 border-green-500/30';
+      case 'Finalizada': return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
+      case 'Cancelada': return 'text-red-400 bg-red-500/10 border-red-500/30';
+      default: return 'text-zinc-400 bg-zinc-500/10 border-zinc-500/30';
     }
   };
 
-  // Lógica para filtrar las citas según el botón seleccionado
+  const getIndicadorColor = (estado) => {
+    switch(estado) {
+      case 'Pendiente': return 'bg-yellow-500';
+      case 'Confirmada': return 'bg-green-500';
+      case 'Finalizada': return 'bg-blue-500';
+      case 'Cancelada': return 'bg-red-500';
+      default: return 'bg-zinc-500';
+    }
+  };
+
   const citasFiltradas = filtro === 'Todas' 
     ? citas 
     : citas.filter(cita => cita.estado === filtro);
 
+  const getFiltroColor = (estado) => {
+    switch(estado) {
+      case 'Todas': return filtro === estado ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : '';
+      case 'Pendiente': return filtro === estado ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' : '';
+      case 'Confirmada': return filtro === estado ? 'bg-green-500/10 text-green-400 border-green-500/30' : '';
+      case 'Finalizada': return filtro === estado ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' : '';
+      case 'Cancelada': return filtro === estado ? 'bg-red-500/10 text-red-400 border-red-500/30' : '';
+      default: return '';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-primary text-white pb-20">
-      <header className="bg-primary pt-10 pb-6 px-6 sticky top-0 z-10 border-b border-white/10 flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-accent transition-colors">
-          <FaArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="text-xl font-bold text-white">Todas las Citas</h1>
-          <p className="text-sm text-gray-400">Monitoreo general</p>
+    <div className="min-h-screen bg-neutral-950 text-zinc-100 pb-20 relative overflow-hidden">
+      {/* Efecto de fondo sutil */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-neutral-950 to-neutral-950 pointer-events-none" />
+
+      {/* Header con glassmorphism */}
+      <header className="bg-neutral-950/80 backdrop-blur-xl pt-10 pb-6 px-4 sm:px-6 sticky top-0 z-10 border-b border-zinc-800/60 relative">
+        <div className="max-w-5xl mx-auto flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="bg-zinc-900/60 p-2.5 rounded-full border border-zinc-800 text-zinc-400 hover:text-amber-500 hover:border-amber-500/50 transition-all duration-300 active:scale-95"
+          >
+            <FaArrowLeft size={18} />
+          </button>
+          <div className="flex items-center gap-3">
+            <FaCalendarAlt className="text-amber-500" size={20} />
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-amber-500 tracking-tight">
+                Todas las Citas
+              </h1>
+              <p className="text-xs text-zinc-500">Monitoreo general del sistema</p>
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="px-6 py-6">
-        {/* Filtros */}
+      <main className="px-4 sm:px-6 py-6 max-w-5xl mx-auto relative z-10">
+        {/* Filtros Premium */}
         <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <div className="flex items-center gap-2 text-gray-400 mr-2 shrink-0">
-            <FaFilter size={14} />
+          <div className="flex items-center gap-2 text-zinc-500 mr-2 shrink-0">
+            <FaFilter size={12} />
           </div>
           {['Todas', 'Pendiente', 'Confirmada', 'Finalizada', 'Cancelada'].map(estado => (
             <button
               key={estado}
               onClick={() => setFiltro(estado)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-300 border ${
                 filtro === estado 
-                ? 'bg-accent text-primary border-accent' 
-                : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                ? getFiltroColor(estado)
+                : 'bg-zinc-900/40 text-zinc-400 border-zinc-800/60 hover:bg-zinc-800/60 hover:border-zinc-700'
               }`}
             >
               {estado}
@@ -103,44 +134,74 @@ const AdminCitas = () => {
         </div>
 
         {loading ? (
-          <div className="text-center text-gray-400 mt-10">Cargando reservas...</div>
+          <div className="flex flex-col items-center justify-center mt-16 gap-4">
+            <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-zinc-400 text-sm">Cargando reservas...</p>
+          </div>
         ) : citasFiltradas.length === 0 ? (
-          <div className="text-center flex flex-col items-center gap-4 mt-10 p-6 bg-white/5 rounded-2xl border border-white/10">
-            <FaCalendarAlt size={40} className="text-gray-500" />
-            <p className="text-gray-400">No hay citas para mostrar en esta categoría.</p>
+          <div className="flex flex-col items-center justify-center mt-16 gap-4 bg-zinc-900/40 rounded-2xl border border-zinc-800/60 backdrop-blur-xl p-8">
+            <div className="w-20 h-20 bg-zinc-900/60 rounded-full flex items-center justify-center border border-zinc-800">
+              <FaCalendarAlt className="text-zinc-600" size={32} />
+            </div>
+            <div className="text-center">
+              <p className="text-zinc-300 font-semibold">No hay citas para mostrar</p>
+              <p className="text-zinc-500 text-sm mt-1">Prueba con otro filtro</p>
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {citasFiltradas.map((cita) => (
-              <div key={cita.id} className="bg-white/5 p-5 rounded-2xl border border-white/10 flex flex-col gap-3 relative overflow-hidden">
+              <div 
+                key={cita.id} 
+                className="group bg-zinc-900/40 hover:bg-zinc-800/60 rounded-2xl border border-zinc-800/60 hover:border-amber-500/30 flex flex-col gap-3 relative overflow-hidden transition-all duration-300 backdrop-blur-xl"
+              >
                 {/* Indicador visual de estado a la izquierda */}
-                <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                  cita.estado === 'Pendiente' ? 'bg-yellow-500' :
-                  cita.estado === 'Confirmada' ? 'bg-green-500' :
-                  cita.estado === 'Finalizada' ? 'bg-blue-500' : 'bg-red-500'
-                }`}></div>
+                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getIndicadorColor(cita.estado)} rounded-r-full`} />
 
-                <div className="flex justify-between items-start pl-2">
-                  <div>
-                    <h3 className="font-bold text-lg">{cita.servicioNombre}</h3>
-                    <p className="text-sm text-gray-300">
-                      Cliente: <span className="font-medium text-white">{cita.nombreCliente}</span>
+                <div className="p-5 flex flex-col gap-4 pl-6">
+                  {/* Header de la cita */}
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center shrink-0">
+                        <FaCut className="text-amber-500" size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-base sm:text-lg text-zinc-100 truncate group-hover:text-amber-500 transition-colors duration-300">
+                          {cita.servicioNombre}
+                        </h3>
+                        <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-md border mt-1 ${getBadgeStyle(cita.estado)}`}>
+                          {cita.estado}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="bg-amber-500/10 border border-amber-500/20 text-amber-500 font-black px-2.5 py-1 rounded-lg text-xs sm:text-sm whitespace-nowrap">
+                      S/ {cita.precioFinal}
+                    </span>
+                  </div>
+
+                  {/* Info del cliente y barbero */}
+                  <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/60 flex flex-col gap-1.5">
+                    <p className="text-xs sm:text-sm text-zinc-300 flex items-center gap-2">
+                      <FaUser size={10} className="text-amber-500 shrink-0" />
+                      <span className="font-medium text-zinc-100">{cita.nombreCliente}</span>
                     </p>
-                    <p className="text-sm text-gray-400">
-                      Barbero: {cita.barberoNombre}
+                    <p className="text-xs sm:text-sm text-zinc-400 flex items-center gap-2">
+                      <FaUserTie size={10} className="text-amber-500 shrink-0" />
+                      {cita.barberoNombre}
                     </p>
                   </div>
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getBadgeStyle(cita.estado)}`}>
-                    {cita.estado}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center mt-2 pt-3 border-t border-white/5 pl-2">
-                  <div className="flex gap-3 text-sm font-medium">
-                    <span className="text-white bg-white/10 px-2 py-1 rounded">{cita.fecha}</span>
-                    <span className="text-gray-400 bg-white/5 px-2 py-1 rounded">{cita.hora}</span>
+                  
+                  {/* Fecha y Hora */}
+                  <div className="flex gap-2 text-xs sm:text-sm font-semibold">
+                    <span className="flex-1 bg-zinc-900/60 border border-zinc-800/60 text-zinc-100 px-3 py-2 rounded-lg flex items-center justify-center gap-2">
+                      <FaCalendarAlt size={10} className="text-amber-500" />
+                      {cita.fecha}
+                    </span>
+                    <span className="flex-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 px-3 py-2 rounded-lg flex items-center justify-center gap-2">
+                      <FaClock size={10} />
+                      {cita.hora}
+                    </span>
                   </div>
-                  <span className="text-accent font-bold">S/ {cita.precioFinal}</span>
                 </div>
               </div>
             ))}
