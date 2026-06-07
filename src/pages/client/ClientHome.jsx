@@ -8,7 +8,7 @@ import { logoutUser } from '../../services/authService';
 
 const ClientHome = () => {
   const { user } = useAuth();
-  const [perfil, setPerfil] = useState(null); // Nuevo estado para guardar los datos del usuario
+  const [perfil, setPerfil] = useState(null);
   const [ultimaCita, setUltimaCita] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -26,14 +26,12 @@ const ClientHome = () => {
     const fetchData = async () => {
       if (!user) return;
       try {
-        // 1. Obtenemos los datos del perfil del usuario (para nombre y foto)
         const docRef = doc(db, 'usuarios', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setPerfil(docSnap.data());
         }
 
-        // 2. Obtenemos la última cita confirmada
         const q = query(
           collection(db, 'citas'),
           where('clienteId', '==', user.uid),
@@ -41,7 +39,7 @@ const ClientHome = () => {
           orderBy('fecha', 'asc'),
           limit(1)
         );
-        
+
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           setUltimaCita(querySnapshot.docs[0].data());
@@ -57,80 +55,129 @@ const ClientHome = () => {
   }, [user]);
 
   const menuItems = [
-    { title: 'Barberos', icon: <FaUserTie size={24} />, path: '/client/barberos', color: 'bg-white/10' },
-    { title: 'Mis Citas', icon: <FaCalendarAlt size={24} />, path: '/client/citas', color: 'bg-white/10' },
-    { title: 'Perfil', icon: <FaUser size={24} />, path: '/client/perfil', color: 'bg-white/10' },
-    { title: 'Gastos', icon: <FaWallet size={24} />, path: '/client/gastos', color: 'bg-white/10' },
+    { title: 'Barberos', icon: <FaUserTie size={28} />, path: '/client/barberos' },
+    { title: 'Mis Citas', icon: <FaCalendarAlt size={28} />, path: '/client/citas' },
+    { title: 'Perfil', icon: <FaUser size={28} />, path: '/client/perfil' },
+    { title: 'Gastos', icon: <FaWallet size={28} />, path: '/client/gastos' },
   ];
 
   return (
-    <div className="min-h-screen bg-primary text-white pb-20">
-      {/* Header Personalizado con Foto y Nombre */}
-      <header className="bg-primary pt-10 pb-6 px-6 sticky top-0 z-10 border-b border-white/10 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          {/* Avatar del Usuario */}
-          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20 shrink-0">
-            {perfil?.fotoUrl ? (
-              <img src={perfil.fotoUrl} alt="Perfil" className="w-full h-full object-cover" />
-            ) : (
-              <FaUser className="text-gray-400" size={24} />
-            )}
-          </div>
-          
-          {/* Texto de Bienvenida */}
-          <div>
-            <h1 className="text-xl font-bold text-accent tracking-wide">Snyder Barber</h1>
-            <p className="text-gray-300 text-sm mt-1">
-              Hola, <span className="font-semibold text-white">{perfil?.nombre || 'Cliente'}</span> 👋
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-neutral-950 text-zinc-100 pb-20 relative overflow-hidden">
+      {/* Efecto de fondo sutil */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-neutral-950 to-neutral-950 pointer-events-none" />
 
-        {/* Botón Salir */}
-        <button 
-          onClick={handleLogout} 
-          className="bg-white/5 p-3 rounded-full border border-white/10 text-gray-400 hover:text-red-500 hover:border-red-500/50 transition-all ml-2"
-          title="Cerrar sesión"
-        >
-          <FaSignOutAlt size={18} />
-        </button>
+      {/* Header Personalizado */}
+      <header className="bg-neutral-950/80 backdrop-blur-xl pt-10 pb-6 px-4 sm:px-6 sticky top-0 z-10 border-b border-zinc-800/60 relative">
+        <div className="max-w-5xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {/* Avatar del Usuario */}
+            <div className="w-14 h-14 rounded-full bg-zinc-900/60 flex items-center justify-center overflow-hidden border-2 border-amber-500/30 shrink-0 shadow-lg shadow-amber-500/10">
+              {perfil?.fotoUrl ? (
+                <img src={perfil.fotoUrl} alt="Perfil" className="w-full h-full object-cover" />
+              ) : (
+                <FaUser className="text-zinc-500" size={24} />
+              )}
+            </div>
+
+            {/* Texto de Bienvenida */}
+            <div>
+              <h1 className="text-lg sm:text-xl font-black text-amber-500 tracking-tight">
+                Snyder Barber
+              </h1>
+              <p className="text-zinc-400 text-sm mt-0.5">
+                Hola, <span className="font-semibold text-zinc-100">{perfil?.nombre || 'Cliente'}</span> 👋
+              </p>
+            </div>
+          </div>
+
+          {/* Botón Salir */}
+          <button
+            onClick={handleLogout}
+            className="bg-zinc-900/60 p-3 rounded-full border border-zinc-800 text-zinc-400 hover:text-red-400 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 ml-2 active:scale-95"
+            title="Cerrar sesión"
+          >
+            <FaSignOutAlt size={18} />
+          </button>
+        </div>
       </header>
 
-      <main className="px-6 py-6">
+      <main className="px-4 sm:px-6 py-6 max-w-5xl mx-auto relative z-10">
         {/* Accesos Rápidos */}
-        <h2 className="text-lg font-semibold mb-4 text-gray-200">Acceso Rápido</h2>
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4 ml-1">
+          Acceso Rápido
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
           {menuItems.map((item, index) => (
-            <Link 
-              key={index} 
+            <Link
+              key={index}
               to={item.path}
-              className={`${item.color} p-6 rounded-2xl flex flex-col items-center justify-center gap-3 border border-white/5 active:bg-white/20 transition-colors`}
+              className="group bg-zinc-900/40 hover:bg-zinc-800/60 p-5 sm:p-6 rounded-2xl flex flex-col items-center justify-center gap-3 border border-zinc-800/60 hover:border-amber-500/30 active:scale-95 transition-all duration-300"
             >
-              <div className="text-accent">{item.icon}</div>
-              <span className="font-medium text-sm">{item.title}</span>
+              <div className="text-amber-500 group-hover:scale-110 transition-transform duration-300">
+                {item.icon}
+              </div>
+              <span className="font-semibold text-xs sm:text-sm text-zinc-300 group-hover:text-zinc-100 transition-colors">
+                {item.title}
+              </span>
             </Link>
           ))}
         </div>
 
-        {/* Última Cita Confirmada */}
-        <h2 className="text-lg font-semibold mb-4 text-gray-200">Próxima Cita</h2>
-        <div className="bg-white/5 rounded-2xl p-6 border border-white/10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-accent/10 rounded-bl-full"></div>
-          
-          {loading ? (
-            <p className="text-gray-400 text-sm">Cargando...</p>
-          ) : ultimaCita ? (
-            <div>
-              <p className="font-bold text-lg mb-1">{ultimaCita.servicioNombre}</p>
-              <p className="text-gray-400 text-sm mb-3">Con {ultimaCita.barberoNombre}</p>
-              <div className="flex gap-4 text-sm font-medium text-accent">
-                <span className="bg-accent/10 px-3 py-1 rounded-full">{ultimaCita.fecha}</span>
-                <span className="bg-accent/10 px-3 py-1 rounded-full">{ultimaCita.hora}</span>
+        {/* Próxima Cita Confirmada */}
+        <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4 ml-1">
+          Próxima Cita
+        </h2>
+        <div className="bg-zinc-900/40 rounded-2xl p-6 border border-zinc-800/60 relative overflow-hidden backdrop-blur-xl">
+          {/* Decoración de fondo */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-500/5 rounded-full pointer-events-none blur-2xl" />
+
+          <div className="relative z-10">
+            {loading ? (
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-zinc-400 text-sm">Cargando tu próxima cita...</p>
               </div>
-            </div>
-          ) : (
-            <p className="text-gray-400 text-sm">No tienes citas confirmadas.</p>
-          )}
+            ) : ultimaCita ? (
+              <div>
+                <div className="flex items-start gap-4">
+                  {/* Icono de cita */}
+                  <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center shrink-0">
+                    <FaCalendarAlt className="text-amber-500" size={20} />
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="font-bold text-lg sm:text-xl text-zinc-100 mb-1">
+                      {ultimaCita.servicioNombre}
+                    </p>
+                    <p className="text-zinc-400 text-sm mb-4 flex items-center gap-2">
+                      <FaUserTie size={12} className="text-amber-500" />
+                      Con {ultimaCita.barberoNombre}
+                    </p>
+
+                    {/* Fecha y Hora */}
+                    <div className="flex flex-wrap gap-2">
+                      <span className="bg-amber-500/10 border border-amber-500/20 text-amber-500 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <FaCalendarAlt size={10} />
+                        {ultimaCita.fecha}
+                      </span>
+                      <span className="bg-amber-500/10 border border-amber-500/20 text-amber-500 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold">
+                        {ultimaCita.hora}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 bg-zinc-800/60 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <FaCalendarAlt className="text-zinc-600" size={24} />
+                </div>
+                <p className="text-zinc-400 text-sm font-medium">No tienes citas confirmadas</p>
+                <p className="text-zinc-600 text-xs mt-1">Reserva tu próxima cita con nuestros barberos</p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
