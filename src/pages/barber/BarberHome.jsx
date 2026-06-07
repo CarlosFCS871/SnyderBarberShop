@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../config/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-// Importamos FaUser para el ícono de perfil y el avatar por defecto
-import { FaCalendarCheck, FaClock, FaCheckDouble, FaMoneyBillWave, FaCut, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { FaCalendarCheck, FaClock, FaCheckDouble, FaMoneyBillWave, FaCut, FaSignOutAlt, FaUser, FaChartLine, FaArrowRight } from 'react-icons/fa';
 import { logoutUser } from '../../services/authService';
 
 const BarberHome = () => {
@@ -13,7 +12,6 @@ const BarberHome = () => {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Estados de estadísticas
   const [stats, setStats] = useState({
     pendientes: 0,
     confirmadas: 0,
@@ -36,12 +34,10 @@ const BarberHome = () => {
     const fetchData = async () => {
       if (!user) return;
       try {
-        // 1. Obtener datos del barbero (nombre y foto)
         const docRef = doc(db, 'usuarios', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) setPerfil(docSnap.data());
 
-        // 2. Obtener todas las citas asignadas a este barbero
         const q = query(collection(db, 'citas'), where('barberoId', '==', user.uid));
         const querySnapshot = await getDocs(q);
 
@@ -81,68 +77,84 @@ const BarberHome = () => {
     fetchData();
   }, [user]);
 
-  // Agregamos "Mi Perfil" a los accesos rápidos
   const menuItems = [
-    { title: 'Gestión de Citas', icon: <FaCalendarCheck size={24} />, path: '/barber/citas', color: 'bg-green-500/10 text-green-500' },
-    { title: 'Mis Servicios', icon: <FaCut size={24} />, path: '/barber/servicios', color: 'bg-accent/10 text-accent' },
-    { title: 'Historial Ingresos', icon: <FaMoneyBillWave size={24} />, path: '/barber/ingresos', color: 'bg-blue-500/10 text-blue-500' },
-    { title: 'Mi Perfil', icon: <FaUser size={24} />, path: '/barber/perfil', color: 'bg-white/10 text-gray-300' },
+    { title: 'Gestión de Citas', subtitle: 'Administra tus reservas', icon: <FaCalendarCheck size={22} />, path: '/barber/citas', color: 'bg-green-500/10 text-green-400 border-green-500/30' },
+    { title: 'Mis Servicios', subtitle: 'Catálogo y precios', icon: <FaCut size={22} />, path: '/barber/servicios', color: 'bg-amber-500/10 text-amber-500 border-amber-500/30' },
+    { title: 'Historial Ingresos', subtitle: 'Reportes financieros', icon: <FaMoneyBillWave size={22} />, path: '/barber/ingresos', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' },
+    { title: 'Mi Perfil', subtitle: 'Datos personales', icon: <FaUser size={22} />, path: '/barber/perfil', color: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30' },
   ];
 
   return (
-    <div className="min-h-screen bg-primary text-white pb-20">
-      {/* Header Personalizado con Foto y Nombre */}
-      <header className="bg-primary pt-10 pb-6 px-6 sticky top-0 z-10 border-b border-white/10 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          {/* Avatar del Barbero */}
-          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-accent shrink-0">
-            {perfil?.fotoUrl ? (
-              <img src={perfil.fotoUrl} alt="Perfil" className="w-full h-full object-cover" />
-            ) : (
-              <FaUser className="text-gray-400" size={24} />
-            )}
-          </div>
-          
-          {/* Texto de Bienvenida */}
-          <div>
-            <h1 className="text-xl font-bold text-accent tracking-wide">Panel Barbero</h1>
-            <p className="text-gray-300 text-sm mt-1">
-              Hola, <span className="font-semibold text-white">{perfil?.nombre || 'Barbero'}</span> ✂️
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-neutral-950 text-zinc-100 pb-20 relative overflow-hidden">
+      {/* Efecto de fondo sutil */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-neutral-950 to-neutral-950 pointer-events-none" />
 
-        {/* Botón Salir */}
-        <button 
-          onClick={handleLogout} 
-          className="bg-white/5 p-3 rounded-full border border-white/10 text-gray-400 hover:text-red-500 hover:border-red-500/50 transition-all ml-2"
-          title="Cerrar sesión"
-        >
-          <FaSignOutAlt size={18} />
-        </button>
-      </header>
-
-      <main className="px-6 py-6 flex flex-col gap-6">
-        
-        {/* Resumen de Ganancias */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3 text-gray-200">Rendimiento Financiero</h2>
-          <div className="bg-gradient-to-br from-[#1a1a1a] to-black border border-white/10 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-            <div className="absolute -right-4 -bottom-4 text-white/5">
-              <FaMoneyBillWave size={100} />
+      {/* Header con glassmorphism */}
+      <header className="bg-neutral-950/80 backdrop-blur-xl pt-10 pb-6 px-4 sm:px-6 sticky top-0 z-10 border-b border-zinc-800/60 relative">
+        <div className="max-w-5xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {/* Avatar del Barbero */}
+            <div className="w-14 h-14 rounded-full bg-zinc-900/60 flex items-center justify-center overflow-hidden border-2 border-amber-500/30 shrink-0 shadow-lg shadow-amber-500/10">
+              {perfil?.fotoUrl ? (
+                <img src={perfil.fotoUrl} alt="Perfil" className="w-full h-full object-cover" />
+              ) : (
+                <FaUser className="text-zinc-500" size={24} />
+              )}
             </div>
             
-            <p className="text-sm text-gray-400 mb-1">Ganancias de Hoy</p>
-            <h3 className="text-3xl font-black text-accent mb-4">S/ {loading ? '...' : stats.gananciasHoy.toFixed(2)}</h3>
+            {/* Texto de Bienvenida */}
+            <div>
+              <h1 className="text-lg sm:text-xl font-black text-amber-500 tracking-tight">
+                Panel Barbero
+              </h1>
+              <p className="text-zinc-400 text-sm mt-0.5">
+                Hola, <span className="font-semibold text-zinc-100">{perfil?.nombre || 'Barbero'}</span> ✂️
+              </p>
+            </div>
+          </div>
+
+          {/* Botón Salir */}
+          <button 
+            onClick={handleLogout} 
+            className="bg-zinc-900/60 p-3 rounded-full border border-zinc-800 text-zinc-400 hover:text-red-400 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 ml-2 active:scale-95"
+            title="Cerrar sesión"
+          >
+            <FaSignOutAlt size={18} />
+          </button>
+        </div>
+      </header>
+
+      <main className="px-4 sm:px-6 py-6 max-w-5xl mx-auto relative z-10 flex flex-col gap-6">
+        
+        {/* Resumen de Ganancias Premium */}
+        <div>
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4 ml-1 flex items-center gap-2">
+            <FaChartLine className="text-amber-500" size={12} />
+            Rendimiento Financiero
+          </h2>
+          <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 shadow-2xl shadow-amber-500/30">
+            {/* Decoraciones de fondo */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-black/20 rounded-full blur-2xl" />
+            <FaMoneyBillWave size={120} className="absolute -bottom-6 -right-6 text-black/10 rotate-12" />
             
-            <div className="flex gap-6 border-t border-white/10 pt-4">
-              <div>
-                <p className="text-xs text-gray-400">Este Mes</p>
-                <p className="font-bold text-white">S/ {loading ? '...' : stats.gananciasMes.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Total Histórico</p>
-                <p className="font-bold text-white">S/ {loading ? '...' : stats.gananciasTotales.toFixed(2)}</p>
+            <div className="relative z-10">
+              <p className="text-amber-950/80 text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">
+                Ganancias de Hoy
+              </p>
+              <h3 className="text-4xl sm:text-5xl font-black text-neutral-950 tracking-tight mb-4">
+                S/ {loading ? '...' : stats.gananciasHoy.toFixed(2)}
+              </h3>
+              
+              <div className="flex flex-wrap gap-4 sm:gap-6 border-t border-amber-950/20 pt-4">
+                <div>
+                  <p className="text-amber-950/60 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Este Mes</p>
+                  <p className="font-black text-neutral-950 text-sm sm:text-base">S/ {loading ? '...' : stats.gananciasMes.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-amber-950/60 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Histórico</p>
+                  <p className="font-black text-neutral-950 text-sm sm:text-base">S/ {loading ? '...' : stats.gananciasTotales.toFixed(2)}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -150,42 +162,56 @@ const BarberHome = () => {
 
         {/* Resumen de Citas */}
         <div>
-          <h2 className="text-lg font-semibold mb-3 text-gray-200">Estado de Citas</h2>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col items-center text-center">
-              <FaClock className="text-yellow-500 mb-2" size={20} />
-              <span className="text-xl font-black text-white">{loading ? '-' : stats.pendientes}</span>
-              <span className="text-[10px] text-gray-400 uppercase tracking-wider mt-1">Pendientes</span>
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4 ml-1">
+            Estado de Citas
+          </h2>
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-zinc-900/40 border border-zinc-800/60 hover:border-yellow-500/30 rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-300 backdrop-blur-xl">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center mb-3">
+                <FaClock className="text-yellow-400" size={16} />
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-zinc-100">{loading ? '-' : stats.pendientes}</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-wider mt-1 font-semibold">Pendientes</span>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col items-center text-center">
-              <FaCalendarCheck className="text-green-500 mb-2" size={20} />
-              <span className="text-xl font-black text-white">{loading ? '-' : stats.confirmadas}</span>
-              <span className="text-[10px] text-gray-400 uppercase tracking-wider mt-1">Confirmadas</span>
+            <div className="bg-zinc-900/40 border border-zinc-800/60 hover:border-green-500/30 rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-300 backdrop-blur-xl">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-3">
+                <FaCalendarCheck className="text-green-400" size={16} />
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-zinc-100">{loading ? '-' : stats.confirmadas}</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-wider mt-1 font-semibold">Confirmadas</span>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col items-center text-center">
-              <FaCheckDouble className="text-blue-500 mb-2" size={20} />
-              <span className="text-xl font-black text-white">{loading ? '-' : stats.finalizadas}</span>
-              <span className="text-[10px] text-gray-400 uppercase tracking-wider mt-1">Finalizadas</span>
+            <div className="bg-zinc-900/40 border border-zinc-800/60 hover:border-blue-500/30 rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-300 backdrop-blur-xl">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center mb-3">
+                <FaCheckDouble className="text-blue-400" size={16} />
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-zinc-100">{loading ? '-' : stats.finalizadas}</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-wider mt-1 font-semibold">Finalizadas</span>
             </div>
           </div>
         </div>
 
         {/* Herramientas (Accesos Rápidos) */}
         <div>
-          <h2 className="text-lg font-semibold mb-3 text-gray-200">Herramientas</h2>
-          <div className="grid grid-cols-1 gap-3">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4 ml-1">
+            Herramientas
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {menuItems.map((item, index) => (
               <Link 
                 key={index} 
                 to={item.path}
-                className="bg-white/5 p-4 rounded-xl flex items-center gap-4 border border-white/5 hover:bg-white/10 transition-colors"
+                className="group bg-zinc-900/40 hover:bg-zinc-800/60 p-4 sm:p-5 rounded-2xl flex items-center gap-4 border border-zinc-800/60 hover:border-amber-500/30 transition-all duration-300 backdrop-blur-xl"
               >
-                <div className={`p-3 rounded-lg ${item.color}`}>
+                <div className={`p-3 rounded-xl border ${item.color} group-hover:scale-110 transition-transform duration-300`}>
                   {item.icon}
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-sm">{item.title}</h3>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm sm:text-base text-zinc-100 group-hover:text-amber-500 transition-colors duration-300">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-zinc-500 truncate">{item.subtitle}</p>
                 </div>
+                <FaArrowRight className="text-zinc-600 group-hover:text-amber-500 group-hover:translate-x-1 transition-all duration-300" size={14} />
               </Link>
             ))}
           </div>
